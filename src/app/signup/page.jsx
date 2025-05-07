@@ -18,7 +18,7 @@ export default function SignupPage() {
       return;
     }
 
-    const roleMapped = role === "cliente" ? "Client" : "User";
+    const roleMapped = role === "cliente" ? "Client" : role === "membro" ? "User" : "PM";
 
     try {
       const response = await fetch("http://localhost:8000/users/", {
@@ -124,6 +124,17 @@ export default function SignupPage() {
                 } hover:border-[#7f00ff] transition`}
               >
                 Membro
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole("pm")}
+                className={`w-full py-2 font-semibold rounded border ${
+                  role === "pm"
+                    ? "bg-[#7f00ff] text-white"
+                    : "bg-white text-gray-800 border-gray-300"
+                } hover:border-[#7f00ff] transition`}
+              >
+                PM
               </button>
             </div>
 

@@ -5,7 +5,6 @@ import { useAuth } from "../../../hooks/useAuth";
 import { useParams, useRouter } from "next/navigation";
 import BackButton from "../../components/BackButton";
 
-
 export default function ProjectDashboard() {
   const { getUserInfo, logout } = useAuth();
   const user = getUserInfo();
@@ -28,6 +27,10 @@ export default function ProjectDashboard() {
 
     fetchProject();
   }, [id]);
+
+  const handleGoToTask = (taskId) => {
+    router.push(`/project/${id}/task/${taskId}`);
+  };
 
   const handleProjectStatusChange = async (e) => {
     const newStatus = e.target.value;
@@ -87,7 +90,10 @@ export default function ProjectDashboard() {
       <div className="bg-white max-w-3xl mx-auto p-8 rounded-lg shadow-md">
         <div className="flex justify-between items-center mb-6">
           <div>{`Welcome ${user.user.name}`}</div>
-          <button onClick={logout} className="text-purple-700 font-bold hover:underline">
+          <button
+            onClick={logout}
+            className="text-purple-700 font-bold hover:underline"
+          >
             Logout 🔐
           </button>
         </div>
@@ -114,7 +120,7 @@ export default function ProjectDashboard() {
 
         <div className="text-sm text-gray-700 font-semibold mb-2">Tasks</div>
 
-        {project.tasks.length > 0 ? (
+        {project.tasks?.length > 0 ? (
           project.tasks.map((task) => (
             <div
               key={task.id}
@@ -122,7 +128,10 @@ export default function ProjectDashboard() {
             >
               <div className="flex items-center gap-4">
                 <div className="w-7 h-7 bg-purple-700 rounded-full"></div>
-                <div>
+                <div
+                  className="cursor-pointer"
+                  onClick={() => handleGoToTask(task.id)}
+                >
                   <strong>{task.title}</strong>
                   <p className="text-xs text-gray-600">{task.status}</p>
                 </div>
@@ -150,12 +159,14 @@ export default function ProjectDashboard() {
           <p className="text-sm text-gray-500 mb-4">No tasks yet.</p>
         )}
 
-        <button
-          onClick={() => router.push(`/project/${id}/task/create`)}
-          className="w-full mt-6 border border-gray-300 bg-white text-gray-600 hover:bg-gray-100 px-4 py-3 rounded-xl font-semibold shadow-md flex justify-center items-center gap-2"
-        >
-          <span className="text-lg">＋</span> New Task
-        </button>
+        {(user.user.role === "PM" || user.user.role === "User") && (
+          <button
+            onClick={() => router.push(`/project/${id}/task/create`)}
+            className="w-full mt-6 border border-gray-300 bg-white text-gray-600 hover:bg-gray-100 px-4 py-3 rounded-xl font-semibold shadow-md flex justify-center items-center gap-2"
+          >
+            <span className="text-lg">＋</span> New Task
+          </button>
+        )}
       </div>
     </div>
   );

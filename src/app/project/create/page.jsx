@@ -12,14 +12,14 @@ export default function CreateProjectPage() {
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [memberEmail, setMemberEmail] = useState("");
-  const [members, setMembers] = useState([]);
+  // const [memberEmail, setMemberEmail] = useState("");
+  // const [members, setMembers] = useState([]);
 
-  const handleAddMember = () => {
-    if (!memberEmail.trim()) return;
-    setMembers([...members, { email: memberEmail }]);
-    setMemberEmail("");
-  };
+  // const handleAddMember = () => {
+  //   if (!memberEmail.trim()) return;
+  //   setMembers([...members, { email: memberEmail }]);
+  //   setMemberEmail("");
+  // };
 
   const handleSubmit = async () => {
     if (!name || !description) return;
@@ -35,7 +35,6 @@ export default function CreateProjectPage() {
           description,
           status: 'Development',
           pmId: user.user.id,
-          // members, // Você pode ajustar no backend para aceitar essa estrutura
         }),
       });
 
@@ -84,7 +83,7 @@ export default function CreateProjectPage() {
             />
           </div>
         </div>
-
+{/* 
         <h3 className="text-lg font-semibold text-gray-800 mt-8 mb-2">Add Members</h3>
         <div className="flex gap-3 mb-4">
           <input
@@ -109,7 +108,7 @@ export default function CreateProjectPage() {
               <span className="bg-gray-200 px-3 py-1 rounded-md text-xs">Member</span>
             </div>
           ))}
-        </div>
+        </div> */}
 
         <button
           onClick={handleSubmit}

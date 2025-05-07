@@ -12,11 +12,23 @@ export default function CreateTaskPage() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [assignedTo, setAssignedTo] = useState("");
   const [deadline, setDeadline] = useState("");
+  const [memberEmail, setMemberEmail] = useState("");
+  const [members, setMembers] = useState([]);
+
+  const handleAddMember = () => {
+    if (!memberEmail.trim()) return;
+    if (members.some((m) => m.email === memberEmail)) return;
+    setMembers([...members, { email: memberEmail }]);
+    setMemberEmail("");
+  };
+
+  const handleRemoveMember = (emailToRemove) => {
+    setMembers(members.filter((m) => m.email !== emailToRemove));
+  };
 
   const handleSubmit = async () => {
-    if (!title || !description  || !deadline) return;
+    if (!title || !description || !deadline) return;
 
     try {
       const response = await fetch("http://localhost:8000/tasks/", {
@@ -27,10 +39,10 @@ export default function CreateTaskPage() {
         body: JSON.stringify({
           title,
           description,
-          assignedToId: parseInt(assignedTo),
           deadline,
           projectId: parseInt(id),
-          status: "Pending", // default status
+          status: "Pending",
+          assignedEmails: members.map((m) => m.email), // usando os emails
         }),
       });
 
@@ -80,17 +92,6 @@ export default function CreateTaskPage() {
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700">Assign To (User ID)</label>
-            <input
-              type="number"
-              value={assignedTo}
-              onChange={(e) => setAssignedTo(e.target.value)}
-              placeholder="e.g. 3"
-              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md text-sm"
-            />
-          </div>
-
-          <div>
             <label className="text-sm font-medium text-gray-700">Deadline</label>
             <input
               type="date"
@@ -98,6 +99,43 @@ export default function CreateTaskPage() {
               onChange={(e) => setDeadline(e.target.value)}
               className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md text-sm"
             />
+          </div>
+
+          {/* Adição de Membros */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 mt-8 mb-2">Add Members</h3>
+            <div className="flex gap-3 mb-4">
+              <input
+                type="email"
+                value={memberEmail}
+                onChange={(e) => setMemberEmail(e.target.value)}
+                placeholder="Member email"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-sm"
+              />
+              <button
+                onClick={handleAddMember}
+                className="bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold shadow-md"
+              >
+                Add
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {members.map((member, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center text-sm bg-gray-100 px-4 py-2 rounded-md"
+                >
+                  <span>{member.email}</span>
+                  <button
+                    onClick={() => handleRemoveMember(member.email)}
+                    className="text-red-500 hover:underline text-xs"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 

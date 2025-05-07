@@ -9,6 +9,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const router = useRouter();
 
+  const goToSignUp = () => { 
+    router.push('/signup')
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -47,6 +51,8 @@ export default function LoginPage() {
       alert("Network error");
     }
   };
+
+
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center font-sans">
@@ -93,7 +99,7 @@ export default function LoginPage() {
           </form>
           <p className="text-sm text-gray-600">
             Don't have an account?{" "}
-            <a href="#" className="text-[#7f00ff] font-bold hover:underline">
+            <a onClick={() => goToSignUp()} className="text-[#7f00ff] font-bold hover:underline">
               Sign up
             </a>
           </p>

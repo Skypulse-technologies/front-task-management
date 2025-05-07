@@ -3,6 +3,25 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { useRouter } from "next/navigation";
+import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 export default function DashboardPage() {
   const { getUserInfo, logout } = useAuth();
@@ -10,11 +29,14 @@ export default function DashboardPage() {
   const router = useRouter();
 
   const [projects, setProjects] = useState([]);
+  const [chartData, setChartData] = useState(null); // Inicializado como null
 
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const res = await fetch("http://localhost:8000/projects");
+        const res = await fetch(
+          `http://localhost:8000/projects?userId=${user.user.id}&email=${user.user.email}`
+        );
         const data = await res.json();
         setProjects(data);
       } catch (err) {
@@ -22,7 +44,48 @@ export default function DashboardPage() {
       }
     };
 
+    const fetchStatusSummary = async () => {
+      const user = getUserInfo().user;
+
+      const res = await fetch(
+        `http://localhost:8000/tasks/status/summary?userId=${user.id}&email=${user.email}`
+      );
+      const data = await res.json();
+
+      const colors = {
+        Pending: "#42A5F5",
+        Completed: "#66BB6A",
+        Active: "#FFA726",
+        Canceled: "#EF5350",
+        "On Hold": "#AB47BC",
+      };
+
+      const borderColors = {
+        Pending: "#1E88E5",
+        Completed: "#388E3C",
+        Active: "#FB8C00",
+        Canceled: "#E53935",
+        "On Hold": "#8E24AA",
+      };
+
+      const labels = Object.keys(data);
+
+      const datasets = labels.map((status) => ({
+        label: status,
+        data: [data[status]], // uma barra por dataset
+        backgroundColor: colors[status] || "#999",
+        borderColor: borderColors[status] || "#666",
+        borderWidth: 1,
+      }));
+
+      setChartData({
+        labels: [""], // um único grupo de barras
+        datasets: datasets,
+      });
+    };
+
     fetchProjects();
+    fetchStatusSummary();
   }, []);
 
   const handleCreateProject = () => {
@@ -40,7 +103,12 @@ export default function DashboardPage() {
         <div className="flex justify-between items-center mb-6">
           <div className="text-sm text-gray-700">Welcome {user.user.name}</div>
           <div className="flex items-center">
-          <span onClick={logout} className="text-purple-700 font-bold cursor-pointer">Logout 🔐</span>
+            <span
+              onClick={logout}
+              className="text-purple-700 font-bold cursor-pointer"
+            >
+              Logout 🔐
+            </span>
           </div>
         </div>
 
@@ -62,16 +130,53 @@ export default function DashboardPage() {
             </div>
           ))}
 
-          <div
-            onClick={handleCreateProject}
-            className="bg-indigo-50 flex justify-center items-center rounded-lg h-[100px] cursor-pointer"
-          >
-            <div className="text-3xl text-gray-600">+</div>
-          </div>
+          {user.user.role === "PM" && (
+            <div
+              onClick={handleCreateProject}
+              className="bg-indigo-50 flex justify-center items-center rounded-lg h-[100px] cursor-pointer"
+            >
+              <div className="text-3xl text-gray-600">+</div>
+            </div>
+          )}
         </div>
 
-        {/* Content Box */}
-        <div className="bg-indigo-50 h-[280px] rounded-lg"></div>
+        {/* Gráfico de status das tarefas */}
+        <div className="bg-indigo-50 rounded-lg p-4">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            Task Status Summary
+          </h3>
+
+          {/* Verificar se o chartData foi carregado */}
+          {chartData ? (
+            <Bar
+              data={chartData}
+              options={{
+                responsive: true,
+                plugins: {
+                  title: {
+                    display: true,
+                    text: "Task Status Summary",
+                  },
+                  legend: {
+                    display: true,
+                    position: "bottom",
+                  },
+                },
+                scales: {
+                  x: {
+                    stacked: false,
+                  },
+                  y: {
+                    beginAtZero: true,
+                    stacked: false,
+                  },
+                },
+              }}
+            />
+          ) : (
+            <div>Loading chart...</div>
+          )}
+        </div>
       </div>
     </div>
   );
