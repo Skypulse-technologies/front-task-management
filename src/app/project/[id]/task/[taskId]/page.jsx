@@ -8,7 +8,7 @@ import BackButton from "@/app/components/BackButton";
 export default function TaskOverviewPage() {
   const { getUserInfo, logout } = useAuth();
   const user = getUserInfo().user;
-  const { taskId } = useParams();
+  const { taskId, id } = useParams();
 
   const [status, setStatus] = useState("Pending");
   const [email, setEmail] = useState("");
@@ -18,6 +18,9 @@ export default function TaskOverviewPage() {
     description: "",
     deadline: "",
   });
+
+  const [commentContent, setCommentContent] = useState("");
+  const [comments, setComments] = useState([]);
 
   useEffect(() => {
     const fetchTask = async () => {
@@ -34,12 +37,23 @@ export default function TaskOverviewPage() {
         data.assignees.map((user) => ({
           name: user.name,
           email: user.email,
-          role: "Member", // adapte se sua API retornar papel
+          role: "Member",
         }))
       );
     };
 
-    if (taskId) fetchTask();
+    const fetchComments = async () => {
+      const res = await fetch("http://localhost:8000/comments");
+      const data = await res.json();
+      const taskComments = data.filter((c) => c.taskId === parseInt(taskId));
+      console.log(taskComments)
+      setComments(taskComments);
+    };
+
+    if (taskId) {
+      fetchTask();
+      fetchComments();
+    }
   }, [taskId]);
 
   const handleToggleStatus = async () => {
@@ -86,27 +100,45 @@ export default function TaskOverviewPage() {
     }
   };
 
+  const handleAddComment = async () => {
+    if (!commentContent.trim()) return;
+
+    const res = await fetch("http://localhost:8000/comments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        content: commentContent,
+        taskId: parseInt(taskId),
+        projectId: parseInt(id),
+        authorId: parseInt(user.id),
+      }),
+    });
+
+    if (res.ok) {
+      const newComment = await res.json();
+      newComment.author = {...user}
+
+      console.log(newComment)
+      setComments((prev) => [newComment, ...prev]);
+      setCommentContent("");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 flex justify-center p-10">
       <BackButton />
       <div className="bg-white w-full max-w-xl p-10 rounded-lg shadow-md">
         <div className="flex justify-between items-center text-sm text-gray-700">
-          <span>Welcome {user.email}</span>
+          <span>Welcome {user.name}</span>
           <span onClick={logout} className="text-purple-700 font-bold cursor-pointer">
             Logout 🔐
           </span>
         </div>
 
-        {/* Task Title */}
         <h2 className="text-2xl font-bold text-purple-700 mt-6">{task.title}</h2>
-
-        {/* Task Description */}
         <p className="text-gray-600 mt-2">{task.description}</p>
-
-        {/* Task Deadline */}
         <p className="text-sm text-gray-500 mt-1">Deadline: {task.deadline}</p>
 
-        {/* Status Button */}
         <button
           onClick={handleToggleStatus}
           className={`mt-4 px-4 py-2 rounded-full text-white font-semibold ${
@@ -120,30 +152,31 @@ export default function TaskOverviewPage() {
           {status}
         </button>
 
-        {/* Add Member */}
-
         {(user.role === "PM" || user.role === "User") && (
-        <><h3 className="text-lg font-semibold text-gray-800 mt-10 mb-2">Add Members</h3><div className="flex gap-3 mb-4">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Member email"
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-sm" />
-            <button
-              onClick={handleAddMember}
-              className="bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold shadow-md"
-            >
-              Add
-            </button>
-          </div></>
+          <>
+            <h3 className="text-lg font-semibold text-gray-800 mt-10 mb-2">Add Members</h3>
+            <div className="flex gap-3 mb-4">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Member email"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-sm"
+              />
+              <button
+                onClick={handleAddMember}
+                className="bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold shadow-md"
+              >
+                Add
+              </button>
+            </div>
+          </>
         )}
-        {/* Members List */}
+
         <div className="mt-6 space-y-4">
           {members.map((member, index) => (
             <div key={index} className="flex justify-between items-center">
               <div className="flex items-center gap-3">
-                
                 <div>
                   <p className="font-bold">{member.name}</p>
                   <p className="text-gray-500 text-sm">{member.email}</p>
@@ -152,6 +185,33 @@ export default function TaskOverviewPage() {
               <span className="border border-black px-3 py-1 rounded text-sm font-bold">
                 {member.role}
               </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Comments Section */}
+        <h3 className="text-lg font-semibold text-gray-800 mt-10 mb-2">Comments</h3>
+        <div className="flex gap-3 mb-4">
+          <input
+            type="text"
+            value={commentContent}
+            onChange={(e) => setCommentContent(e.target.value)}
+            placeholder="Write a comment"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-sm"
+          />
+          <button
+            onClick={handleAddComment}
+            className="bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold shadow-md"
+          >
+            Post
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          {comments.map((comment) => (
+            <div key={comment.id} className="bg-gray-100 p-3 rounded-md">
+              <p className="text-sm font-semibold">{comment.author?.name || "Anonymous"}</p>
+              <p className="text-sm text-gray-700">{comment.content}</p>
             </div>
           ))}
         </div>
