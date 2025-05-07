@@ -1,12 +1,24 @@
 "use client";
 
+import { useAuth } from "../../hooks/useAuth";
+import { useRouter } from "next/navigation";
+
+
 export default function DashboardPage() {
+  const { getUserInfo } = useAuth();
+  const user = getUserInfo();
+  const router = useRouter();
+
+  const handleCreateProject = () => {
+    router.push("/project/create")
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center font-sans">
       <div className="bg-white w-full max-w-4xl p-6 rounded-lg shadow-md">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <div className="text-sm text-gray-700">Welcome User Email</div>
+          <div className="text-sm text-gray-700">Welcome { user.user.name }</div>
           <div className="flex items-center">
             <button className="bg-purple-700 text-white w-6 h-6 rounded flex items-center justify-center text-sm">
               ⇥
@@ -33,7 +45,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-indigo-50 flex justify-center items-center rounded-lg h-[100px] cursor-pointer">
+          <div onClick={handleCreateProject} className="bg-indigo-50 flex justify-center items-center rounded-lg h-[100px] cursor-pointer">
             <div className="text-3xl text-gray-600">+</div>
           </div>
         </div>

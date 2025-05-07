@@ -35,7 +35,15 @@ export default function SignupPage() {
       });
 
       if (response.ok) {
-        router.push("/dashboard");
+        const data = await response.json();
+
+        if (data.token) {
+          localStorage.setItem("token", data.token); // <--- salva o token
+          router.push("/dashboard");
+        } else {
+          // Lidar com erro
+        }
+
       } else {
         const error = await response.json();
         alert(error.message || "Error creating user");

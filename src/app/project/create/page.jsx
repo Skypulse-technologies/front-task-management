@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth } from "../../../hooks/useAuth";
 import { useRouter } from "next/navigation";
 
 export default function CreateProjectPage() {
+  const { getUserInfo } = useAuth();
+  const user = getUserInfo();
   const router = useRouter();
 
   const [name, setName] = useState("");
@@ -29,7 +32,9 @@ export default function CreateProjectPage() {
         body: JSON.stringify({
           name,
           description,
-          members, // Você pode ajustar no backend para aceitar essa estrutura
+          status: 'Development',
+          pmId: user.user.id,
+          // members, // Você pode ajustar no backend para aceitar essa estrutura
         }),
       });
 
@@ -38,7 +43,7 @@ export default function CreateProjectPage() {
       }
 
       const data = await response.json();
-      router.push(`/dashboard/project/${data.id}`);
+      router.push(`/project/${data.id}`);
     } catch (error) {
       console.error("Erro ao criar projeto:", error);
     }
