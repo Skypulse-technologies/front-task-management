@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { useRouter } from "next/navigation";
+import BackButton from "@/app/components/BackButton";
 
 export default function CreateProjectPage() {
-  const { getUserInfo } = useAuth();
+  const { getUserInfo, logout } = useAuth();
   const user = getUserInfo();
   const router = useRouter();
 
@@ -51,10 +52,11 @@ export default function CreateProjectPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex justify-center p-10">
+      <BackButton />
       <div className="bg-white w-full max-w-xl p-10 rounded-lg shadow-md">
         <div className="flex justify-between items-center text-sm text-gray-700 mb-4">
           <span>Create New Project</span>
-          <span className="text-purple-700 font-bold cursor-pointer">Logout 🔐</span>
+          <span onClick={logout} className="text-purple-700 font-bold cursor-pointer">Logout 🔐</span>
         </div>
 
         <h2 className="text-2xl font-bold text-purple-700">New Project</h2>

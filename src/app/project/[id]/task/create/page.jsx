@@ -1,10 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
+import BackButton from "@/app/components/BackButton";
+import { useAuth } from "@/hooks/useAuth";
 
-export default function CreateTaskPage({ projectId }) {
+export default function CreateTaskPage() {
+  const { getUserInfo, logout } = useAuth();
   const router = useRouter();
+  const { id } = useParams();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -12,7 +16,7 @@ export default function CreateTaskPage({ projectId }) {
   const [deadline, setDeadline] = useState("");
 
   const handleSubmit = async () => {
-    if (!title || !description || !assignedTo || !deadline) return;
+    if (!title || !description  || !deadline) return;
 
     try {
       const response = await fetch("http://localhost:8000/tasks/", {
@@ -25,7 +29,7 @@ export default function CreateTaskPage({ projectId }) {
           description,
           assignedToId: parseInt(assignedTo),
           deadline,
-          projectId: parseInt(projectId),
+          projectId: parseInt(id),
           status: "Pending", // default status
         }),
       });
@@ -35,7 +39,7 @@ export default function CreateTaskPage({ projectId }) {
       }
 
       const data = await response.json();
-      router.push(`/dashboard/project/${projectId}`);
+      router.push(`/project/${id}`);
     } catch (error) {
       console.error("Erro ao criar tarefa:", error);
     }
@@ -43,10 +47,11 @@ export default function CreateTaskPage({ projectId }) {
 
   return (
     <div className="min-h-screen bg-gray-100 flex justify-center p-10">
+      <BackButton />
       <div className="bg-white w-full max-w-xl p-10 rounded-lg shadow-md">
         <div className="flex justify-between items-center text-sm text-gray-700 mb-4">
           <span>Create New Task</span>
-          <span className="text-purple-700 font-bold cursor-pointer">Logout 🔐</span>
+          <span onClick={logout} className="text-purple-700 font-bold cursor-pointer">Logout 🔐</span>
         </div>
 
         <h2 className="text-2xl font-bold text-purple-700">New Task</h2>

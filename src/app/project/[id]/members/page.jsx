@@ -1,8 +1,10 @@
 "use client";
 
+import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 
 export default function AddMemberPage() {
+  const { getUserInfo, logout } = useAuth();
   const [email, setEmail] = useState("");
   const [members, setMembers] = useState([
     { name: "James Coope", email: "example@email.com", role: "Owner" },
@@ -21,7 +23,7 @@ export default function AddMemberPage() {
       <div className="bg-white w-full max-w-xl p-10 rounded-lg shadow-md">
         <div className="flex justify-between items-center text-sm text-gray-700">
           <span>Welcome User Email</span>
-          <span className="text-purple-700 font-bold cursor-pointer">Logout 🔐</span>
+          <span onClick={logout} className="text-purple-700 font-bold cursor-pointer">Logout 🔐</span>
         </div>
 
         <h2 className="text-2xl font-bold text-purple-700 mt-6">Add New Member</h2>

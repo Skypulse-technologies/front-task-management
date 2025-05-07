@@ -46,5 +46,10 @@ export const useAuth = (redirectIfInvalid = true) => {
     return decodeToken(token);
   };
 
-  return { getUserInfo };
+  const logout = () => {
+    localStorage.removeItem("token")
+    router.push('/login')
+  }
+
+  return { getUserInfo, logout };
 };

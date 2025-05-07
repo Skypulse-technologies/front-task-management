@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { useParams, useRouter } from "next/navigation";
+import BackButton from "../../components/BackButton";
+
 
 export default function ProjectDashboard() {
-  const { getUserInfo } = useAuth();
+  const { getUserInfo, logout } = useAuth();
   const user = getUserInfo();
   const { id } = useParams();
   const router = useRouter();
@@ -27,7 +29,7 @@ export default function ProjectDashboard() {
     fetchProject();
   }, [id]);
 
-  const handleStatusChange = async (e) => {
+  const handleProjectStatusChange = async (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
 
@@ -45,7 +47,35 @@ export default function ProjectDashboard() {
         }),
       });
     } catch (err) {
-      console.error("Erro ao atualizar status:", err);
+      console.error("Erro ao atualizar status do projeto:", err);
+    }
+  };
+
+  const handleTaskStatusChange = async (taskId, e) => {
+    const newStatus = e.target.value;
+
+    // Atualiza o status localmente
+    setProject((prevProject) => {
+      const updatedTasks = prevProject.tasks.map((task) => {
+        if (task.id === taskId) {
+          return { ...task, status: newStatus };
+        }
+        return task;
+      });
+      return { ...prevProject, tasks: updatedTasks };
+    });
+
+    // Envia a atualização ao backend
+    try {
+      await fetch(`http://localhost:8000/tasks/${taskId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+    } catch (err) {
+      console.error("Erro ao atualizar status da task:", err);
     }
   };
 
@@ -53,10 +83,11 @@ export default function ProjectDashboard() {
 
   return (
     <div className="bg-gray-100 min-h-screen py-10 px-4 font-sans">
+      <BackButton />
       <div className="bg-white max-w-3xl mx-auto p-8 rounded-lg shadow-md">
         <div className="flex justify-between items-center mb-6">
-          <div>{ `Wellcome ${user.user.name}` }</div>
-          <button className="text-purple-700 font-bold hover:underline">
+          <div>{`Welcome ${user.user.name}`}</div>
+          <button onClick={logout} className="text-purple-700 font-bold hover:underline">
             Logout 🔐
           </button>
         </div>
@@ -72,7 +103,7 @@ export default function ProjectDashboard() {
           </label>
           <select
             value={status}
-            onChange={handleStatusChange}
+            onChange={handleProjectStatusChange}
             className="mt-1 px-3 py-2 rounded border border-gray-300 text-sm"
           >
             <option value="Pending">Pending</option>
@@ -81,9 +112,7 @@ export default function ProjectDashboard() {
           </select>
         </div>
 
-        <div className="text-sm text-gray-700 font-semibold mb-2">
-          Tasks
-        </div>
+        <div className="text-sm text-gray-700 font-semibold mb-2">Tasks</div>
 
         {project.tasks.length > 0 ? (
           project.tasks.map((task) => (
@@ -100,6 +129,20 @@ export default function ProjectDashboard() {
               </div>
               <div className="text-sm text-gray-600">
                 Due date: {new Date(task.deadline).toLocaleDateString()}
+              </div>
+              <div className="ml-4">
+                <label className="text-sm text-gray-700 mr-2">
+                  Task Status
+                </label>
+                <select
+                  value={task.status}
+                  onChange={(e) => handleTaskStatusChange(task.id, e)}
+                  className="px-3 py-2 rounded border border-gray-300 text-sm"
+                >
+                  <option value="Pending">Pending</option>
+                  <option value="Active">Active</option>
+                  <option value="Completed">Completed</option>
+                </select>
               </div>
             </div>
           ))
