@@ -112,7 +112,7 @@ export default function SignupPage() {
                     : "bg-white text-gray-800 border-gray-300"
                 } hover:border-[#7f00ff] transition`}
               >
-                Cliente
+                Client
               </button>
               <button
                 type="button"
@@ -123,7 +123,7 @@ export default function SignupPage() {
                     : "bg-white text-gray-800 border-gray-300"
                 } hover:border-[#7f00ff] transition`}
               >
-                Membro
+                Member
               </button>
               <button
                 type="button"
